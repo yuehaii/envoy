@@ -2797,7 +2797,8 @@ TEST_F(ClusterManagerImplTest, WarmingClusterBlocksCdsUntilWarmed) {
   bool cds_paused = false;
   bool cds_resumed = false;
 
-  ON_CALL(factory_.server_context_.xds_manager_, pause(Config::getTypeUrl<envoy::config::cluster::v3::Cluster>()))
+  ON_CALL(factory_.server_context_.xds_manager_,
+          pause(Config::getTypeUrl<envoy::config::cluster::v3::Cluster>()))
       .WillByDefault(testing::Invoke([&](const std::string&) -> Config::ScopedResume {
         cds_paused = true;
         return makePauseHandle(cds_resumed);
@@ -2849,7 +2850,8 @@ TEST_F(ClusterManagerImplTest, WarmingClusterWithSdsZeroTimeoutDoesNotBlockCds) 
   create(defaultConfig());
 
   bool cds_paused = false;
-  ON_CALL(factory_.server_context_.xds_manager_, pause(Config::getTypeUrl<envoy::config::cluster::v3::Cluster>()))
+  ON_CALL(factory_.server_context_.xds_manager_,
+          pause(Config::getTypeUrl<envoy::config::cluster::v3::Cluster>()))
       .WillByDefault(testing::Invoke([&](const std::string&) -> Config::ScopedResume {
         cds_paused = true;
         return std::make_unique<Cleanup>([]() {});
@@ -2909,7 +2911,8 @@ TEST_F(ClusterManagerImplTest, SdsZeroTimeoutClusterDoesNotBlockCdsForOtherWarmi
 
   bool cds_paused = false;
   bool cds_resumed = false;
-  ON_CALL(factory_.server_context_.xds_manager_, pause(Config::getTypeUrl<envoy::config::cluster::v3::Cluster>()))
+  ON_CALL(factory_.server_context_.xds_manager_,
+          pause(Config::getTypeUrl<envoy::config::cluster::v3::Cluster>()))
       .WillByDefault(testing::Invoke([&](const std::string&) -> Config::ScopedResume {
         cds_paused = true;
         return makePauseHandle(cds_resumed);

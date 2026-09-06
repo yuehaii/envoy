@@ -12,8 +12,8 @@
 #include "envoy/config/cluster/v3/cluster.pb.h"
 #include "envoy/config/core/v3/config_source.pb.h"
 #include "envoy/config/core/v3/protocol.pb.h"
-#include "envoy/extensions/transport_sockets/tls/v3/tls.pb.h"
 #include "envoy/event/dispatcher.h"
+#include "envoy/extensions/transport_sockets/tls/v3/tls.pb.h"
 #include "envoy/grpc/async_client.h"
 #include "envoy/network/dns.h"
 #include "envoy/runtime/runtime.h"
@@ -129,13 +129,11 @@ bool clusterHasSdsWithZeroTimeout(const envoy::config::cluster::v3::Cluster& con
         return false;
       };
 
-  if (config.has_transport_socket() &&
-      transportSocketHasZeroTimeout(config.transport_socket())) {
+  if (config.has_transport_socket() && transportSocketHasZeroTimeout(config.transport_socket())) {
     return true;
   }
   for (const auto& match : config.transport_socket_matches()) {
-    if (match.has_transport_socket() &&
-        transportSocketHasZeroTimeout(match.transport_socket())) {
+    if (match.has_transport_socket() && transportSocketHasZeroTimeout(match.transport_socket())) {
       return true;
     }
   }
@@ -1087,9 +1085,8 @@ void ClusterManagerImpl::updateClusterCounts() {
       }
     }
     // Release handles for clusters that are no longer warming.
-    absl::erase_if(cds_pauses_, [this](const auto& entry) {
-      return !warming_clusters_.contains(entry.first);
-    });
+    absl::erase_if(cds_pauses_,
+                   [this](const auto& entry) { return !warming_clusters_.contains(entry.first); });
   }
   cm_stats_.active_clusters_.set(active_clusters_.size());
   cm_stats_.warming_clusters_.set(warming_clusters_.size());
