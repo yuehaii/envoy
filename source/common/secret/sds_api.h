@@ -98,6 +98,11 @@ protected:
   // Initializes the SDS API.
   void initialize(bool warm);
 
+  // Returns true if this SDS subscription will wait indefinitely for a secret (warm=true,
+  // initial_fetch_timeout=0). A cluster whose init manager contains such a target must not
+  // hold a CDS pause handle, otherwise a missing secret deadlocks ADS.
+  bool blocksCdsPause() const { return warm_ && zero_initial_fetch_timeout_; }
+
 private:
   absl::Status validateUpdateSize(uint32_t added_resources_num,
                                   uint32_t removed_resources_num) const;
@@ -121,6 +126,8 @@ private:
   TimeSource& time_source_;
   SecretData secret_data_;
   bool started_{false};
+  const bool warm_{false};
+  const bool zero_initial_fetch_timeout_{false};
   std::unique_ptr<Filesystem::Watcher> watcher_;
 };
 
@@ -170,6 +177,7 @@ public:
 
   const Init::Target* initTarget() override { return &init_target_; }
   void start() override { initialize(false); }
+  bool blocksCdsPause() const override { return SdsApi::blocksCdsPause(); }
 
 protected:
   Common::CallbackManager<absl::Status, const SecretType&> validation_callback_manager_;

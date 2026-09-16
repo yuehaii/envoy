@@ -6,6 +6,7 @@
 
 #include "source/common/common/assert.h"
 #include "source/common/config/api_version.h"
+#include "source/common/config/utility.h"
 #include "source/common/config/well_known_names.h"
 #include "source/common/grpc/common.h"
 #include "source/common/protobuf/utility.h"
@@ -33,7 +34,10 @@ SdsApi::SdsApi(envoy::config::core::v3::ConfigSource sds_config, absl::string_vi
       sds_config_(std::move(sds_config)), sds_config_name_(sds_config_name),
       clean_up_(std::move(destructor_cb)), subscription_factory_(subscription_factory),
       time_source_(time_source),
-      secret_data_{sds_config_name_, "uninitialized", time_source_.systemTime()} {
+      secret_data_{sds_config_name_, "uninitialized", time_source_.systemTime()},
+      warm_(warm),
+      zero_initial_fetch_timeout_(Config::Utility::configSourceInitialFetchTimeout(sds_config_) ==
+                                  std::chrono::milliseconds(0)) {
   const auto resource_name = resource_type_helper_.getResourceName();
   // This has to happen here (rather than in initialize()) as it can throw exceptions.
   subscription_ =

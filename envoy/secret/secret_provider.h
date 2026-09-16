@@ -62,6 +62,13 @@ public:
   virtual const Init::Target* initTarget() { return nullptr; }
 
   /**
+   * @return true if this provider waits indefinitely for a secret (warm=true,
+   * initial_fetch_timeout=0). A cluster that has such a provider registered in its init manager
+   * must not hold a CDS pause handle — a missing secret would otherwise deadlock ADS.
+   */
+  virtual bool blocksCdsPause() const { return false; }
+
+  /**
    * Start initializing the provider (when not using the init manager).
    */
   virtual void start() PURE;

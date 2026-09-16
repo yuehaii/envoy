@@ -122,6 +122,13 @@ public:
   // Return true if the cluster must be ready-for-use before ADS (Aggregated Discovery Service) can
   // be initialized; will only occur if ADS is configured to use the cluster via EnvoyGrpc.
   virtual bool requiredForAds() const PURE;
+
+  // Mark this cluster as having at least one SDS dependency with initial_fetch_timeout == 0.
+  // Such clusters must not hold a CDS pause handle because the missing secret would deadlock ADS.
+  virtual void markSdsZeroTimeout() PURE;
+
+  // Returns true if markSdsZeroTimeout() has been called for this cluster.
+  virtual bool hasSdsZeroTimeout() const PURE;
 };
 
 /**
@@ -316,9 +323,8 @@ public:
   void shutdown() override {
     shutdown_ = true;
     for (auto& [name, handle] : cds_pauses_) {
-      if (handle) {
-        handle->cancel();
-      }
+      ASSERT(handle != nullptr);
+      handle->cancel();
     }
     cds_pauses_.clear();
     // Make sure we destroy all potential outgoing connections before this returns.
@@ -852,6 +858,9 @@ private:
     }
     bool requiredForAds() const override { return required_for_ads_; }
 
+    void markSdsZeroTimeout() override { has_sds_zero_timeout_ = true; }
+    bool hasSdsZeroTimeout() const override { return has_sds_zero_timeout_; }
+
     const envoy::config::cluster::v3::Cluster cluster_config_;
     const uint64_t config_hash_;
     const std::string version_info_;
@@ -871,6 +880,7 @@ private:
     const bool avoid_cds_removal_ : 1;
     bool added_or_updated_ : 1 = false;
     const bool required_for_ads_ : 1;
+    bool has_sds_zero_timeout_ : 1 = false;
   };
 
   struct ClusterUpdateCallbacksHandleImpl : public ClusterUpdateCallbacksHandle,

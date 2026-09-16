@@ -1346,6 +1346,13 @@ public:
   virtual bool warmHosts() const PURE;
 
   /**
+   * @return false if this cluster should not block CDS ACK during warming. When false the cluster
+   * remains in warming_clusters_ but does not hold a CDS pause handle, so a slow-warming cluster
+   * cannot stall unrelated cluster updates delivered over ADS.
+   */
+  virtual bool waitForWarmOnInit() const PURE;
+
+  /**
    * @return true if this cluster is configured to set local interface name on upstream connections.
    */
   virtual bool setLocalInterfaceNameOnUpstreamConnections() const PURE;
@@ -1496,6 +1503,12 @@ public:
    *         on the admin /clusters page, or nullptr if the cluster has none. Defaults to nullptr.
    */
   virtual const AdminEndpointProvider* adminEndpointProvider() const { return nullptr; }
+
+  /**
+   * @return true if this cluster has at least one SDS init target with initial_fetch_timeout == 0.
+   * Such a cluster must not hold a CDS pause handle, as a missing secret would deadlock ADS.
+   */
+  virtual bool hasSdsZeroTimeoutDependency() const { return false; }
 };
 
 using ClusterSharedPtr = std::shared_ptr<Cluster>;

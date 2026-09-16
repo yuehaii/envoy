@@ -89,6 +89,14 @@ struct Manager {
    * Add unready targets information into the config dump.
    */
   virtual void dumpUnreadyTargets(envoy::admin::v3::UnreadyTargetsDumps& dumps) PURE;
+
+  // Mark this manager as having at least one SDS init target with initial_fetch_timeout == 0.
+  // A cluster whose init manager is so marked must not hold a CDS pause handle, because a
+  // missing secret would deadlock ADS indefinitely.
+  virtual void markSdsZeroTimeout() {}
+
+  // Returns true if markSdsZeroTimeout() has been called on this manager.
+  virtual bool hasSdsZeroTimeout() const { return false; }
 };
 
 } // namespace Init

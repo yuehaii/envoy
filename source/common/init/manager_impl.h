@@ -38,6 +38,8 @@ public:
   void initialize(const Watcher& watcher) override;
   void updateWatcher(const Watcher& watcher) override;
   void dumpUnreadyTargets(envoy::admin::v3::UnreadyTargetsDumps& dumps) override;
+  void markSdsZeroTimeout() override { sds_zero_timeout_ = true; }
+  bool hasSdsZeroTimeout() const override { return sds_zero_timeout_; }
 
 private:
   // Callback function with an additional target_name parameter, decrease unready targets count by
@@ -69,6 +71,11 @@ private:
 
   // Count of target_name of unready targets.
   absl::flat_hash_map<std::string, uint32_t> target_names_count_;
+
+  // Set when any SDS init target with initial_fetch_timeout == 0 is registered.
+  // Intentionally never reset: Init::ManagerImpl is constructed fresh for each ClusterImplBase
+  // instance, so stale state from a previous cluster lifecycle cannot accumulate here.
+  bool sds_zero_timeout_{false};
 };
 
 } // namespace Init

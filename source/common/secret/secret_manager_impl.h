@@ -115,6 +115,9 @@ private:
       // separately.
       if (init_manager) {
         init_manager->add(*secret_provider->initTarget());
+        if (secret_provider->blocksCdsPause()) {
+          init_manager->markSdsZeroTimeout();
+        }
       } else {
         // A secret provider can be shared across multiple warming and non-warming users,
         // so this line can be called repeatedly.
